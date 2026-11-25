@@ -38,7 +38,11 @@ cd agenticharvest-example-order-fulfillment
 
 On first use, `run.sh` fetches AgenticHarvest (with this example and the live stack
 as its submodules) into `./.agenticharvest`. Inside an AgenticHarvest checkout, it uses that
-checkout instead. The first run pulls about 2 GB of images and takes a few
+checkout instead. Cloned on its own, `run.sh` runs the copy of this example
+inside `.agenticharvest`, so edits to the files in this clone are not used. To
+change the example, work in an AgenticHarvest checkout
+(`git clone --recurse-submodules https://github.com/IBM/agenticharvest.git`)
+and edit `examples/order_fulfillment/`. The first run pulls about 2 GB of images and takes a few
 minutes. [`agenticharvest-systems`](https://github.com/aster-test-generation/agenticharvest-systems#readme) explains what starts, how to
 open the apps in a browser, and how to fix common problems.
 

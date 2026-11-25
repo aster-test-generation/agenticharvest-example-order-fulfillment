@@ -122,7 +122,9 @@ cd agenticharvest-example-order-fulfillment
 On the first run, `run.sh`:
 
 1. Finds Podman (or Docker) and checks it is running.
-2. Fetches AgenticHarvest into `./.agenticharvest`, with the live stack as a submodule.
+2. Fetches AgenticHarvest into `./.agenticharvest` (once), with this example and
+   the live stack as submodules. The run uses that copy of the example, not the
+   files in this clone.
 3. Starts Directus, Keycloak, and Odoo in containers. The first start pulls
    about 2 GB of images and takes a few minutes. Later runs take seconds.
 4. Builds the **runner** image: Python with AgenticHarvest and this example installed.
@@ -243,6 +245,7 @@ KEY_RULES = [
     # In SQL results and SQL arguments.
     KeyRule(object_type="order", tools=["query"],   result=["rows"], pattern=r"\bO-\d{4}\b"),
     KeyRule(object_type="order", tools=["execute"], param="args",    pattern=r"\bO-\d{4}\b"),
+    KeyRule(object_type="order", tools=["execute"], param="sql",     pattern=r"\bO-\d{4}\b"),
     # In portal request bodies, query filters, and responses.
     KeyRule(object_type="order", tools=["send_operation"], param="body.order_id"),
     KeyRule(object_type="order", tools=["call_operation"], param="query.filter.order_id._eq"),
@@ -468,8 +471,8 @@ median, mean, and maximum. The slowest is listed first.
 `query → createItemsShipments` has a median of 8 minutes. That is longer than
 the other gaps because the clerk queries once per morning and then books the
 orders one after another, so the second order waits for the first. (With the
-steady clock, the waits are 3 or 6 minutes, and the median of six such gaps
-works out to 8 minutes in this run.) In real use, this is where you see which
+steady clock, the first order waits 3 minutes and the second 12, so the median
+of the six gaps is 7.5 minutes, printed as 8.) In real use, this is where you see which
 handoff people actually wait on.
 
 ### Values carried by hand: `retyped_values(log, "order", systems)`
@@ -774,6 +777,10 @@ is read-only:
 
 ## 13. Change it
 
+Make these edits in an AgenticHarvest checkout (`examples/order_fulfillment/`)
+and run from there. A standalone clone's `run.sh` runs the copy inside
+`.agenticharvest`.
+
 **Different orders.** Edit `BATCHES` and `NEW_BATCH` in `erp.py`. Each batch is
 `(order id, customer id, qty, unit price)`. Keep ids in the `O-1234` form, or
 change the `ORDER_ID` pattern in `workflow.py` to match.
@@ -832,7 +839,7 @@ from AgenticHarvest are generic:
 | `agenticharvest.core.events`: `CompositeMapper`, `Correlator`, `KeyRule`, `ValueRule`, `OcelTap` | One log across both systems, keyed by order |
 | `agenticharvest.mining`: `VariantMiner`, `collapse_repeats`, `check_trace` | Mining and conformance |
 | `agenticharvest.mining.analysis`: `handoffs`, `performance`, `retyped_values` | Stage 3 |
-| `agenticharvest.orchestration`: `compile_plan`, `restrict_tools`, `redesign`, `plan_model` | Stages 4 and 5 |
+| `agenticharvest.orchestration.compile`: `compile_plan`, `restrict_tools`; `agenticharvest.orchestration.redesign`: `redesign`, `plan_model` | Stages 4 and 5 |
 
 AgenticHarvest's test `tests/examples/test_cross_system.py` runs stages 1 to 4
 against the live portal and asserts the results shown on this page:
