@@ -1,0 +1,7 @@
+# Local state; never commit.
+.env
+.agenticharvest/
+*_out/
+*.db
+__pycache__/
+out/
